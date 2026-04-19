@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.sqlite3
+.env
+.env.*
+node_modules/
+venv/
+.env.local
+.DS_Store
+firebase/*.json

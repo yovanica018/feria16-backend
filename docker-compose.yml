@@ -1,0 +1,33 @@
+services:
+
+  db:
+    image: postgis/postgis:17-3.4
+    environment:
+      POSTGRES_DB: feria16_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # 👈 ESTA ES LA CLAVE
+
+  web:
+    build: .
+    command: sh -c "/wait-for-it.sh db python manage.py migrate &&
+         python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DB_NAME: feria16_db
+      DB_USER: postgres
+      DB_PASSWORD: 1234
+      DB_HOST: db
+      DB_PORT: 5432
+
+volumes:
+  postgres_data:   # 👈 DEFINICIÓN DEL VOLUMEN
+
