@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,7 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9=%e^8+#8w5ey1+l+4_q!vo%$hs%yjzkb6oq(31$9du#s=it56'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+#DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -62,6 +64,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
+    #para Render
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     #'core.middleware.firebase_auth.FirebaseAuthenticationMiddleware',
 ]
 
@@ -89,25 +95,33 @@ WSGI_APPLICATION = 'feria_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         #'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': os.environ.get('DB_NAME'),
+#         'USER': os.environ.get('DB_USER'),
+#         'PASSWORD': os.environ.get('DB_PASSWORD'),
+#         'HOST': os.environ.get('DB_HOST'),
+#         'PORT': os.environ.get('DB_PORT'),
+#
+#
+#         #'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         #'NAME': 'feria16_db',        # nombre de la base que creaste
+#         #'USER': 'postgres',          # tu usuario
+#         #'PASSWORD': '1234',      # tu contraseña
+#         #'HOST': 'localhost',
+#         #'PORT': '5432',
+#     }
+# }
+
+# Base de datos (Render)
 DATABASES = {
-    'default': {
-        #'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
-
-
-        #'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        #'NAME': 'feria16_db',        # nombre de la base que creaste
-        #'USER': 'postgres',          # tu usuario
-        #'PASSWORD': '1234',      # tu contraseña
-        #'HOST': 'localhost',
-        #'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL')
+    )
 }
+
 
 
 # Password validation
@@ -145,6 +159,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+#para Render
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

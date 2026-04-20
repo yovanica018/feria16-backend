@@ -1,0 +1,1 @@
+web: gunicorn Feria16Backend.wsgi:application --bind 0.0.0.0:$PORT
