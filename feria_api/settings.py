@@ -13,25 +13,25 @@ import os
 from pathlib import Path
 import dj_database_url
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ======================
+# ENTORNO
+# ======================
+ENV = os.getenv("ENV", "local")
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
+# ======================
+# SEGURIDAD
+# ======================
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9=%e^8+#8w5ey1+l+4_q!vo%$hs%yjzkb6oq(31$9du#s=it56'
+DEBUG = ENV != "production"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = True
-DEBUG = False
+ALLOWED_HOSTS = ["*"]
 
-ALLOWED_HOSTS = ['*']
-
-
-# Application definition
-
+# ======================
+# APLICACIONES
+# ======================
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,9 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
 
-    #'django.contrib.gis',        # soporte geoespacial
-    'rest_framework',            # Django REST Framework
-    'usuarios',                 # tabla usuarios
+    'rest_framework',
+    'rest_framework_gis',
+
+    'usuarios',
     'negocios',
     'suscripciones',
     'mapas',
@@ -51,124 +52,79 @@ INSTALLED_APPS = [
     'ventas',
     'interacciones',
     'rutas',
-
-    'rest_framework_gis',
 ]
 
+# ======================
+# MIDDLEWARE
+# ======================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    #para Render
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-
-    #'core.middleware.firebase_auth.FirebaseAuthenticationMiddleware',
 ]
 
+# ======================
+# URLS / WSGI
+# ======================
 ROOT_URLCONF = 'feria_api.urls'
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
-
 WSGI_APPLICATION = 'feria_api.wsgi.application'
 
+# ======================
+# BASE DE DATOS
+# ======================
+if ENV == "production":
+    DATABASES = {
+        'default': dj_database_url.parse(
+            os.environ.get("DATABASE_URL"),
+            engine='django.contrib.gis.db.backends.postgis'
+        )
+    }
+else:
+    # Docker local
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
+            'NAME': os.getenv('DB_NAME', 'feria16_db'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', '1234'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
 
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+# ======================
+# PASSWORDS
+# ======================
+AUTH_PASSWORD_VALIDATORS = []
 
-# DATABASES = {
-#     'default': {
-#         #'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#         'NAME': os.environ.get('DB_NAME'),
-#         'USER': os.environ.get('DB_USER'),
-#         'PASSWORD': os.environ.get('DB_PASSWORD'),
-#         'HOST': os.environ.get('DB_HOST'),
-#         'PORT': os.environ.get('DB_PORT'),
-#
-#
-#         #'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#         #'NAME': 'feria16_db',        # nombre de la base que creaste
-#         #'USER': 'postgres',          # tu usuario
-#         #'PASSWORD': '1234',      # tu contraseña
-#         #'HOST': 'localhost',
-#         #'PORT': '5432',
-#     }
-# }
-
-# Base de datos (Render)
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL')
-    )
-}
-
-
-
-# Password validation
-# https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/4.1/topics/i18n/
-
+# ======================
+# INTERNACIONALIZACIÓN
+# ======================
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
-
+# ======================
+# STATIC FILES
+# ======================
 STATIC_URL = 'static/'
-#para Render
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+# ======================
+# MODELO USUARIO
+# ======================
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
+# ======================
+# DRF
+# ======================
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'usuarios.authentication.FirebaseAuthentication',
@@ -178,33 +134,34 @@ REST_FRAMEWORK = {
     ],
 }
 
-
-
-
-from pathlib import Path
+# ======================
+# FIREBASE
+# ======================
 import firebase_admin
 from firebase_admin import credentials
-
-# Si settings.py está en 'Feria16Backend/', BASE_DIR apunta a la carpeta inmediatamente superior (App16deJulio/apps/).
-# Asumamos que BASE_DIR ya fue definido al inicio de settings.py
-BASE_DIR = Path(__file__).resolve().parent.parent
-# Si tu settings.py está en 'Feria16Backend', entonces 'BASE_DIR' es la carpeta anterior.
+import json
 
 if not firebase_admin._apps:
-    # 1. Ajuste de la ruta: Agregamos el subdirectorio 'firebase'
-    cred_path = BASE_DIR / "firebase/en-la-16-de-julio-firebase-adminsdk-fbsvc-3846a84cfd.json"
-
-    # 2. PRUEBA DE DEPURACIÓN:
-    print("--- DEBUG FIREBASE PATH ---")
-    print(f"Buscando credenciales en: {cred_path.as_posix()}")
-    print(f"¿Existe el archivo? {cred_path.exists()}")
-    print("---------------------------")
 
     try:
-        # Usamos Path directamente, ya no necesitamos .as_posix()
-        cred = credentials.Certificate(cred_path)
+        if ENV == "production":
+            # 🔥 desde variable de entorno (Render)
+            firebase_json = os.getenv("FIREBASE_CREDENTIALS")
+
+            if firebase_json:
+                cred_dict = json.loads(firebase_json)
+                cred = credentials.Certificate(cred_dict)
+            else:
+                raise Exception("FIREBASE_CREDENTIALS no definido")
+
+        else:
+            # 🔧 local (archivo)
+            cred_path = BASE_DIR / "firebase/en-la-16-de-julio-firebase-adminsdk-fbsvc-3846a84cfd.json"
+            cred = credentials.Certificate(cred_path)
+
         firebase_admin.initialize_app(cred)
-        print("Firebase inicializado exitosamente.")
+        print("🔥 Firebase inicializado correctamente")
+
     except Exception as e:
-        print(f"ERROR AL INICIALIZAR FIREBASE (Credenciales): {e}")
+        print(f"❌ Error Firebase: {e}")
 
